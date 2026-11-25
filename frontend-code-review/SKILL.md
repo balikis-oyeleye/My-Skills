@@ -50,6 +50,7 @@ Review frontend code as an experienced teammate familiar with the project's conv
 - Derive related types using appropriate TypeScript utilities such as `Partial`, `Pick`, or `Omit` when their semantics match the requirement. Do not reuse a type solely because its current shape happens to match an unrelated domain.
 - Verify optional fields, nullability, identifiers, and response shapes against actual contracts. Do not substitute empty strings for required identifiers to silence type errors.
 - Ensure action availability and payload construction account for missing required data. Check each action's own prerequisites, not just a related action's conditions.
+- Name types, discriminated-union variants, flags, and derived predicates according to their **specific domain meaning**, not a broad category that also describes other variants. Check how names read at call sites and in conditions; e.g. if both client/lead and sales workflows are pipelines, prefer `"client" | "sales"` over `"pipeline" | "sales"` so `variant === "client"` is unambiguous. Preserve API-defined values and persisted contracts; do not rename public or serialized discriminants without checking compatibility and migration needs.
 
 ### Frontend API integration and error handling
 
