@@ -1,365 +1,204 @@
 ---
 name: tanstack-query-integration
-description: Implement, review, or improve TanStack Query integrations in React and TypeScript applications. Use when asked to integrate useQuery, useInfiniteQuery, or useMutation into components, handle loading, success, error, empty, and pagination states, or review existing query integrations for correctness, edge cases, and consistency with project conventions.
+description: Implement, review, or improve TanStack Query integrations in React and TypeScript. Use when integrating queries or mutations, transforming API responses with select, refactoring deprecated response transformations, or handling loading, success, error, empty, refetching, and pagination states.
 ---
 
 # TanStack Query Integration
 
 ## Overview
 
-Use this skill to implement or review TanStack Query integrations in React and TypeScript applications.
+Build readable, type-safe query integrations that follow existing project conventions. Use explicit, commented JSX rendering states and preserve usable data during recoverable failures.
 
-Prioritize correct query state handling, readable conditional rendering, reusable UI components, and consistency with the existing codebase.
+## Workflow
 
-Every applicable UI state should be rendered dynamically with a descriptive JSX comment.
-
-Always inspect the existing implementation before making changes. **Ask questions when requirements are unclear. Never assume API behavior, business logic, or UI requirements.**
-
-Verify the installed TanStack Query version and consult the corresponding official documentation when necessary.
+- Inspect the installed TanStack Query version, API hooks, response types, query keys, and similar components.
+- For new integrations, identify applicable states and response transformations before implementing.
+- For existing integrations, correct state handling and migrate response-only `useMemo` transformations in files being modified to `select`.
+- Reuse existing skeletons, error and empty-state components, pagination hooks, translations, and notification utilities. Avoid unrelated changes, new dependencies, and unnecessary abstractions.
+- Ask specific, grouped questions when API contracts, business logic, UI behavior, or architectural decisions remain unclear after inspection. Never invent requirements or fallback behavior. Wait for clarification on blocking decisions; distinguish recommendations from confirmed requirements.
 
 ## Core Guidelines
 
-### Inspect before implementing
+### Response transformation and normalization
 
-- Verify the installed TanStack Query version.
-- Inspect existing API hooks and response types.
-- Reuse existing components, utilities, and custom hooks.
-- Follow established naming, styling, and localization conventions.
-- Avoid unnecessary dependencies or abstractions.
+- Use TanStack Query's `select` option for extracting, flattening, mapping, filtering, or normalizing query responses. This applies to `useQuery` and `useInfiniteQuery`.
+- Under the team's convention, `useMemo` used solely to transform query response data is deprecated. Do not introduce it in new code; migrate existing instances when modifying their containing file. This does not prohibit `useMemo` for unrelated computations.
+- Place shared transformations in the query hook or reusable query options; use consumer-specific selectors when different consumers require different shapes. Inspect existing consumers before changing a shared hook's return type.
+- Prefer stable, typed selector functions defined outside components; use `useCallback` when a selector depends on reactive values. Selectors rerun when their reference or input data changes.
+- Keep selectors pure and avoid mutating response data. Handle request failures and response validation in the query function, not in `select`.
+- `select` transforms the observer's returned data, not the underlying cached query-function result. Cache updates must use the original cached shape. For infinite queries, retain `pages` and `pageParams` in cache updates and initial/placeholder data; selected output may expose a different shape when supported by the installed version and correctly typed.
+- Normalize into IDs and entities only when useful. Do not silently deduplicate or change ordering; clarify duplicate handling when it affects business behavior.
+- Do not turn malformed responses into empty results through arbitrary fallbacks.
 
-### Ask questions — never assume
+### Rendering states
 
-- Ask when API contracts, business logic, UI behavior, or architectural decisions are unclear.
-- Inspect the codebase before asking questions.
-- Group related questions to avoid unnecessary back-and-forth.
-- Do not ask about information already established by the codebase.
-- Do not invent fallback behavior or missing requirements.
-- Wait for clarification when a critical decision remains unresolved.
-- Distinguish recommendations from confirmed requirements.
+Use separate, descriptive JSX comments for applicable states. Prefer readable conditional rendering over nested ternaries. Match skeletons to the content layout and use stable item keys.
 
-### Organize rendering states
+| State | Behavior |
+| --- | --- |
+| `isLoading` | Initial active fetch; render skeletons. |
+| Usable data | Render content even if a later request fails. |
+| `isLoadingError` | Show a blocking error and `refetch()` retry when no usable result exists. |
+| Confirmed empty result | Show the appropriate empty or filtered-empty state, not a loading or error state. |
+| `isRefetching` | Preserve content; optionally show a subtle refresh indicator. |
+| `isRefetchError` | Preserve cached results and offer a non-blocking retry. |
+| `isFetchingNextPage` | Append loading skeletons without replacing existing pages. |
+| `isFetchNextPageError` | Preserve loaded pages and offer a `fetchNextPage()` retry. |
+| Previous-page states | Apply equivalent behavior using `isFetchingPreviousPage`, `isFetchPreviousPageError`, and `fetchPreviousPage()` when supported. |
 
-Use descriptive JSX comments for each applicable state.
+Never use `isError` alone to decide whether to replace the entire UI. A cached empty result can also coexist with a refetch failure; retain the appropriate empty-result presentation with a non-blocking error when required by the UX.
 
-Preferred structure:
+In v5, `isLoading` is `isPending && isFetching`. Disabled queries can be pending but idle; paused queries are not necessarily failures. Handle these states explicitly when relevant. Use `isPlaceholderData` to distinguish placeholder results from confirmed results, especially during filter or identifier changes. Respect configured retries and cancellation; do not introduce stale side effects.
 
-```tsx
-return (
-  <>
-    {/* Initial loading state */}
+### Infinite pagination
 
-    {/* Success state */}
+- Derive page parameters from the actual API contract and stop fetching when `hasNextPage` is false.
+- Reuse the existing infinite-scroll hook. Guard automatic pagination against active fetches, placeholder data where relevant, and next-page errors. Do not create automatic retry loops.
+- Keep manual retry separate from automatic pagination so a failed page can be retried deliberately. Prevent overlapping requests unless explicitly intended.
+- Use the corresponding previous-page flags and controls for bidirectional pagination.
 
-    {/* Loading more items */}
+### Mutations
 
-    {/* Next-page error state */}
-
-    {/* Background refetch error state */}
-
-    {/* Initial error state */}
-
-    {/* Empty state */}
-  </>
-);
-```
-
-- Keep rendering conditions explicit and readable.
-- Avoid unnecessary nested ternaries.
-- Include only states relevant to the query.
-- Adjust rendering order to match the component layout.
-- Do not create unnecessary components solely to separate states.
-
-### Handle loading correctly
-
-- Use `isLoading` for an active initial fetch.
-- Use `isPending` when handling queries that have not produced a result but may not be actively fetching.
-- Reuse existing skeleton components.
-- Match skeleton layouts to actual content.
-- Do not display initial skeletons during background refetching.
-- Consider disabled and paused queries when applicable.
-
-### Preserve successful data
-
-- Render usable data even when a subsequent request fails.
-- Do not rely exclusively on `isSuccess` when displaying cached data.
-- Use stable keys for mapped elements.
-- Follow existing response transformation conventions.
-- Use `useMemo` only when justified.
-
-### Handle errors correctly
-
-- Use `isLoadingError` to identify initial query failures.
-- Use `isRefetchError` for background refetch failures.
-- Use `isFetchNextPageError` for next-page failures.
-- Use `isFetchPreviousPageError` for previous-page failures when applicable.
-- Never use `isError` alone to decide whether to display a full-page error.
-- Preserve usable data during recoverable failures.
-- Provide appropriate retry actions.
-- Reuse existing error components and error-handling utilities.
-
-### Handle empty states correctly
-
-- Display empty states only when a successful result is genuinely empty.
-- Do not interpret missing data during loading as an empty result.
-- Do not show an empty state after a failed initial request.
-- Account for filtered or searched results when applicable.
-- Reuse existing empty-state components.
-
-### Handle infinite queries correctly
-
-- Flatten pages according to the actual API response structure.
-- Keep previously loaded pages visible while fetching additional pages.
-- Use `isFetchingNextPage` for next-page loading.
-- Use `isFetchNextPageError` for pagination errors.
-- Check `hasNextPage` before fetching.
-- Avoid unintended overlapping requests.
-- Prevent intersection observers from repeatedly retrying failed pages.
-- Stop pagination when no additional pages exist.
-- Handle previous-page states when bidirectional pagination is supported.
-
-### Handle mutations correctly
-
-- Use `isPending` for mutation loading indicators.
-- Prevent unintended duplicate submissions.
-- Follow existing success and error notification conventions.
-- Update or invalidate relevant queries after successful mutations.
-- Preserve confirmation modal behavior.
-- Do not introduce optimistic updates without clear requirements.
-- Implement rollback or reconciliation for optimistic updates when applicable.
-
-## Review Checklist
-
-- **Version:** Installed TanStack Query version verified.
-- **Architecture:** Existing hooks, types, and components reused.
-- **Clarification:** Ambiguous requirements investigated and clarified.
-- **Loading:** Initial loading handled without blocking background refetches.
-- **Success:** Usable data rendered and preserved appropriately.
-- **Error:** Initial, refetch, and pagination errors distinguished.
-- **Empty:** Empty states shown only for confirmed empty results.
-- **Pagination:** Next-page loading, errors, retries, and completion handled.
-- **Concurrency:** Unintended overlapping fetches prevented.
-- **Mutations:** Pending, success, error, and cache updates handled.
-- **Comments:** Meaningful UI states identified with JSX comments.
-- **Accessibility:** Loading indicators and retry actions accessible.
-- **Localization:** User-facing messages follow existing translation conventions.
-- **Code quality:** No unnecessary dependencies, abstractions, or unrelated changes.
-
-## Implementation Checklist
-
-- Inspect the relevant codebase files.
-- Verify the installed TanStack Query version.
-- Identify the query type and response structure.
-- Identify all applicable UI states.
-- Ask questions about unresolved requirements.
-- Reuse existing skeletons, error components, and empty-state components.
-- Implement initial loading.
-- Implement success rendering.
-- Implement initial error handling.
-- Implement empty-state handling.
-- Preserve cached data during background refetching.
-- Handle refetch errors when applicable.
-- Implement pagination loading and error handling for infinite queries.
-- Prevent automatic pagination retry loops.
-- Implement mutation states and cache updates when applicable.
-- Add descriptive JSX comments.
-- Verify TypeScript types and rendering conditions.
-- Run relevant linting, type checks, and tests.
+- Use `isPending` for mutation-specific loading; prevent unintended duplicate submissions and scope loading to the affected item when needed.
+- Follow existing confirmation, notification, and error-handling conventions. Close confirmation dialogs after success unless optimistic behavior is explicitly intended.
+- Update or invalidate the appropriate query keys using the original cache shape. Do not assume invalidation scope.
+- Introduce optimistic updates only when required, with rollback or reconciliation.
 
 ## Quick Snippets
 
-Use these patterns as references. Adapt response types, component names, error messages, and rendering conditions to the existing project.
+Examples assume TanStack Query v5 and illustrative API types and UI components. Adapt them to verified project contracts; do not invent components or response fields.
 
-### 1) Standard query integration
+### Standard query selector
 
 ```tsx
-const { data, isLoading, isLoadingError, isRefetchError, isSuccess, refetch } =
-  useGetItems();
+const selectUsers = (response: UsersResponse) => response.data.users;
 
-const items = data?.data?.items ?? [];
-
-return (
-  <>
-    {/* Initial loading state */}
-    {isLoading && <ItemSkeleton />}
-
-    {/* Success state */}
-    {items.length > 0 &&
-      items.map((item) => <Item key={item.id} {...item} />)}
-
-    {/* Background refetch error state */}
-    {isRefetchError && (
-      <InlineError onRetry={() => void refetch()} />
-    )}
-
-    {/* Initial error state */}
-    {isLoadingError && !data && (
-      <ErrorState onRetry={() => void refetch()} />
-    )}
-
-    {/* Empty state */}
-    {isSuccess && items.length === 0 && <EmptyState />}
-  </>
-);
+export const useUsers = () =>
+  useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+    select: selectUsers
+  });
 ```
 
-### 2) Infinite query data extraction
+### Infinite query selector
 
 ```tsx
-const items = useMemo(
-  () =>
-    infiniteQuery.data?.pages.flatMap(
-      (page) => page.data.data.items ?? []
-    ) ?? [],
-  [infiniteQuery.data]
-);
-```
-
-### 3) Infinite scroll integration
-
-```tsx
-const { loadMoreRef } = useInfiniteScroll({
-  hasNextPage: infiniteQuery.hasNextPage,
-  isFetchingNextPage: infiniteQuery.isFetchingNextPage,
-  fetchNextPage: () => {
-    if (
-      !infiniteQuery.hasNextPage ||
-      infiniteQuery.isFetching
-    ) {
-      return;
-    }
-
-    void infiniteQuery.fetchNextPage();
-  }
+const selectUsers = (data: InfiniteData<UsersPage>) => ({
+  ...data,
+  users: data.pages.flatMap((page) => page.items)
 });
+
+export const useInfiniteUsers = () =>
+  useInfiniteQuery({
+    queryKey: ["users", "infinite"],
+    queryFn: ({ pageParam }) => fetchUsersPage(pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    select: selectUsers
+  });
 ```
 
-Ensure the existing infinite-scroll hook does not automatically retry failed pages indefinitely.
-
-### 4) Infinite query rendering
+### Normalized infinite query selector
 
 ```tsx
-return (
-  <>
-    {/* Initial loading state */}
-    {infiniteQuery.isLoading && <ItemSkeleton />}
+const selectNormalizedUsers = (data: InfiniteData<UsersPage>) => {
+  const entities: Record<string, User> = Object.create(null);
+  const ids: string[] = [];
 
-    {/* Success state */}
-    {items.length > 0 &&
-      items.map((item) => <Item key={item.id} {...item} />)}
-
-    {/* Loading more items */}
-    {infiniteQuery.isFetchingNextPage && <ItemSkeleton />}
-
-    {/* Next-page error state */}
-    {infiniteQuery.isFetchNextPageError && (
-      <InlineError
-        message="Unable to load more items."
-        onRetry={() => void infiniteQuery.fetchNextPage()}
-      />
-    )}
-
-    {/* Background refetch error state */}
-    {infiniteQuery.isRefetchError && (
-      <InlineError
-        onRetry={() => void infiniteQuery.refetch()}
-      />
-    )}
-
-    {/* Initial error state */}
-    {infiniteQuery.isLoadingError && items.length === 0 && (
-      <ErrorState
-        onRetry={() => void infiniteQuery.refetch()}
-      />
-    )}
-
-    {/* Empty state */}
-    {infiniteQuery.isSuccess && items.length === 0 && (
-      <EmptyState />
-    )}
-  </>
-);
-```
-
-### 5) Mutation integration
-
-```tsx
-const { mutate: deleteItem, isPending: isDeleting } = useDeleteItem();
-
-const handleDelete = (id: string) => {
-  deleteItem(
-    { id },
-    {
-      onSuccess: () => {
-        // Follow existing success and cache-update conventions.
-      },
-      onError: () => {
-        // Follow existing error-handling conventions.
+  for (const page of data.pages) {
+    for (const user of page.items) {
+      if (!Object.hasOwn(entities, user.id)) {
+        ids.push(user.id);
       }
+      entities[user.id] = user;
     }
-  );
+  }
+
+  return { ...data, ids, entities };
 };
 ```
 
-## Important Edge Cases
+This example preserves first-seen ID order and uses the last encountered entity for duplicate IDs. Use that policy only when appropriate. Use `select: selectNormalizedUsers` instead of the flattening selector when normalization is required.
 
-### Cached data with an error
+### Infinite query rendering and retry
 
-A query may have cached data while reporting an error after a failed refetch.
+```tsx
+const query = useInfiniteUsers();
+const users = query.data?.users ?? [];
+const canLoadMore = query.hasNextPage && !query.isFetching &&
+  !query.isPaused && !query.isPlaceholderData;
 
-Preserve usable content and display an appropriate non-blocking error.
+const handleLoadMore = () => {
+  if (canLoadMore && !query.isFetchNextPageError) {
+    void query.fetchNextPage({ cancelRefetch: false });
+  }
+};
 
-### Infinite query next-page failure
+const { loadMoreRef } = useInfiniteScroll({
+  hasNextPage: canLoadMore && !query.isFetchNextPageError,
+  isFetchingNextPage: query.isFetchingNextPage,
+  fetchNextPage: handleLoadMore
+});
 
-A failed next-page request may set `isError` while previous pages remain available.
+return (
+  <>
+    {/* Initial loading state */}
+    {query.isLoading && <UserSkeleton />}
 
-Use `isFetchNextPageError` to handle the pagination failure independently.
+    {/* Success state */}
+    {users.map((user) => <UserItem key={user.id} {...user} />)}
 
-### Background refetching
+    {/* Loading more items */}
+    {query.isFetchingNextPage && <UserSkeleton />}
 
-A query may be fetching while displaying valid cached data.
+    {/* Infinite scroll trigger */}
+    {canLoadMore && !query.isFetchNextPageError && (
+      <div ref={loadMoreRef} />
+    )}
 
-Do not replace existing content with initial loading skeletons.
+    {/* Next-page error state */}
+    {query.isFetchNextPageError && !query.isFetching && (
+      <InlineError onRetry={() => {
+        if (canLoadMore) void query.fetchNextPage({ cancelRefetch: false });
+      }} />
+    )}
 
-### Disabled queries
+    {/* Background refetch error state */}
+    {query.isRefetchError && !query.isFetching && (
+      <InlineError onRetry={() => void query.refetch()} />
+    )}
 
-A disabled query may be pending without fetching.
+    {/* Initial error state */}
+    {query.isLoadingError && !query.isFetching && (
+      <ErrorState onRetry={() => void query.refetch()} />
+    )}
 
-Do not assume `isPending` always means an active request.
+    {/* Empty state */}
+    {query.data !== undefined && !query.isPlaceholderData &&
+      users.length === 0 && !query.hasNextPage && <EmptyState />}
+  </>
+);
+```
 
-### Placeholder data
+For standard queries, use the same rendering principles without pagination-specific sections. Add disabled, paused, or refresh indicators when the requirements call for them. Verify the custom infinite-scroll hook's contract before using the example.
 
-Placeholder data may be displayed while the actual query result is loading.
+## Validation Checklist
 
-Use `isPlaceholderData` when the distinction matters.
-
-### Automatic retries
-
-TanStack Query may automatically retry failed requests.
-
-Respect the configured retry behavior and avoid uncontrolled retry loops.
-
-### Query parameter changes
-
-Filters, search terms, or identifiers may change while previous results remain visible.
-
-Follow the established placeholder-data and caching strategy.
-
-### Query cancellation
-
-Respect the existing query function's abort-signal handling and avoid introducing stale side effects.
+- Verify response types, selector stability, and compatibility with existing consumers and cache updates.
+- Exercise initial loading, success, confirmed empty results, initial failure, and retry.
+- Exercise cached data and cached empty results during refetch failures, plus pagination failures and manual retry where applicable.
+- Verify disabled, paused, placeholder, and parameter-change behavior when relevant.
+- Check mutation behavior, localization, accessible loading and retry controls, and meaningful JSX comments.
+- Run relevant tests, linting, and TypeScript checks. Report unverified behavior, blockers, and unresolved decisions.
 
 ## Resources
 
-- Overview: https://tanstack.com/query/latest/docs/framework/react/overview
-- Queries: https://tanstack.com/query/latest/docs/framework/react/guides/queries
-- `useQuery`: https://tanstack.com/query/latest/docs/framework/react/reference/useQuery
-- Infinite queries: https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries
-- `useInfiniteQuery`: https://tanstack.com/query/latest/docs/framework/react/reference/useInfiniteQuery
-- Mutations: https://tanstack.com/query/latest/docs/framework/react/guides/mutations
-- Query retries: https://tanstack.com/query/latest/docs/framework/react/guides/query-retries
-- Query cancellation: https://tanstack.com/query/latest/docs/framework/react/guides/query-cancellation
-- Placeholder data: https://tanstack.com/query/latest/docs/framework/react/guides/placeholder-query-data
+Consult official documentation for the installed version:
 
-Prefer official TanStack Query documentation for version-specific API behavior.
-
-**Primary principle:** Implement every applicable query state correctly, preserve usable data during recoverable failures, follow existing project conventions, and ask questions rather than making assumptions.
+- [useQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useQuery)
+- [useInfiniteQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useInfiniteQuery)
+- [Render optimizations and select](https://tanstack.com/query/latest/docs/framework/react/guides/render-optimizations)
+- [Infinite queries](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries)
+- [Mutations](https://tanstack.com/query/latest/docs/framework/react/guides/mutations)
+- [Query cancellation](https://tanstack.com/query/latest/docs/framework/react/guides/query-cancellation)
