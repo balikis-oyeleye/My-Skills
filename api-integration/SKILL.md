@@ -1,5 +1,5 @@
 ---
-name: tanstack-query-integration
+name: api-integration
 description: Implement, review, or improve TanStack Query integrations in React and TypeScript. Use when integrating queries or mutations, transforming API responses with select, refactoring deprecated response transformations, or handling loading, success, error, empty, refetching, and pagination states.
 ---
 
