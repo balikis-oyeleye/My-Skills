@@ -9,13 +9,13 @@ description: Review frontend React and TypeScript code for correctness, regressi
 
 Review frontend code as an experienced teammate familiar with the project's conventions. Prioritize demonstrable bugs, incomplete functionality, regressions, and maintainability over subjective preferences. Evaluate the implementation in the context of its consumers, existing architecture, and intended product behavior.
 
-**Scope:** React and TypeScript frontend applications, including UI components, hooks, client-side state, routing, styling, localization, browser-side API services, authentication integration, real-time listeners, and frontend tests. Inspect backend contracts only as needed to verify frontend behavior; do not review server implementations, database schemas, or infrastructure. For mixed PRs, review the frontend changes and report external dependencies or contract uncertainties separately.
+**Scope:** React and TypeScript frontend applications, including UI components, hooks, client-side state, routing and browser history, styling, localization, browser-side API services, authentication integration, real-time listeners, and frontend tests. Inspect backend contracts only as needed to verify frontend behavior; do not review server implementations, database schemas, or infrastructure. For mixed PRs, review the frontend changes and report external dependencies or contract uncertainties separately.
 
 ## Review Workflow
 
 1. Establish the frontend review scope, intended behavior, and relevant requirements. Inspect the diff against the appropriate base when available.
 2. Read applicable project instructions, architecture conventions, testing standards (including `API_TESTING_STANDARDS` if present), and related skills. Inspect existing implementations, types, utilities, design tokens, tests, and consumers before recommending changes.
-3. Trace affected user flows, data contracts, state transitions, and cross-module dependencies. Compare behavior before and after the change.
+3. Trace affected user flows, data contracts, state transitions, URL and history behavior, and cross-module dependencies. Compare behavior before and after the change, including browser back/forward navigation.
 4. Apply the core guidelines below. Run relevant tests, type checks, and lint checks when available and appropriate; report what actually ran and its outcome.
 5. Report actionable findings using the output format below. Review only unless implementation is explicitly requested.
 
@@ -64,6 +64,7 @@ Review frontend code as an experienced teammate familiar with the project's conv
 ### React correctness and state synchronization
 
 - Verify context consumers are descendants of the intended provider. A provider returned by the same component cannot supply context to a hook called in that component.
+- Inspect state and context consumers after refactors: remove unused state, setters, and reset logic when no longer needed, but verify indirect consumers and downstream effects first. A reset-only reference does not necessarily justify keeping state that nothing reads.
 - Inspect effect dependencies, stale closures, cleanup, and repeated execution. Prefer stable derived primitives over unstable object or array dependencies only when they capture all relevant changes; do not omit required dependencies to suppress execution.
 - Trace mutations and real-time events through affected query caches, counters, stores, and UI consumers. Consider other tabs, reconnects, and concurrent operations where relevant.
 - Avoid redundant invalidations when SSE or another established mechanism already guarantees the required synchronization. Verify event delivery, affected query keys, and fallback behavior before removing invalidations. Centralize cross-cutting synchronization when justified instead of scattering it across unrelated services.
@@ -91,12 +92,15 @@ Review frontend code as an experienced teammate familiar with the project's conv
 - Trace visible actions to working handlers and the intended data source. Explicitly flag unfinished features, nonfunctional buttons, no-op callbacks, placeholder recipients, dummy production data, and incomplete workflows. Distinguish intentional test fixtures, stories, and approved placeholders from production gaps.
 - Preserve established product behavior unless the change is required or approved. For example, do not hide inactive options when the existing requirement is to display them disabled.
 - Check changes to required-field indicators, validation, default values, form resets, modal transitions, visibility, navigation, and scrolling against the intended behavior. Verify multi-step forms retain required values while showing the correct fields.
+- When changing route navigation or moving tab state into URL search parameters (for example with `nuqs`), inspect history semantics (`push` versus `replace`), browser back/forward navigation, deep links, and whether the prior behavior should be preserved. Do not assume a library’s default matches the old router behavior or that changed history behavior is approved.
+- After changing tabs from pathname-based navigation to query parameters, inspect hooks, effects, route-pattern configuration, and tests that depend on `location.pathname`. Verify whether intended scroll-to-top or scroll-preservation behavior still works; if the requirement is unclear, flag the behavior decision rather than preserving dead logic by default.
 - Consider relevant failure paths, missing data, slow requests, repeated interactions, and state transitions. Establish a concrete reproduction or code path before labeling a suspected issue a bug.
 - Draw attention to incomplete functionality even when discovered outside the immediate diff. Separate pre-existing or out-of-scope issues from regressions introduced by the change; recommend a follow-up PR where appropriate rather than expanding scope silently.
 
 ### Testing
 
 - Follow the repository's testing standards and existing test patterns. Inspect `API_TESTING_STANDARDS` before recommending additional API tests; if unavailable, state that limitation.
+- Require navigation and scroll regression coverage when a routing change affects browser history, query-driven tab switches, or scroll behavior, according to project standards. Do not retain tests that only exercise obsolete route patterns or dead paths.
 - Require meaningful tests for new functionality and changed behavior. Check relevant loading, empty, disabled, pending, error, success, confirmation, and regression scenarios rather than demanding every state for every component.
 - Test the actual user flow, not only a mocked mutation or optimistic cache update. Exercise relevant interactions and assert observable outcomes using appropriate mocks at the boundaries.
 - Do not duplicate tests for shared components in every consumer. A justified wrapper with no additional logic generally needs only a rendering/wiring test, with a short comment explaining the limited coverage when appropriate.
