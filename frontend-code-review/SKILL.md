@@ -38,7 +38,8 @@ Review frontend code as an experienced teammate familiar with the project's conv
 - Extend a reusable component when the new behavior belongs to its responsibility (for example, single-property sorting in `CustomSort`). Check existing consumers and regression coverage.
 - When complete components differ in design or API requirements, extract the genuinely shared subcomponent or helper instead of duplicating common logic or forcing both features into an overly configurable component.
 - Remove wrappers that only forward arguments or props without meaningful responsibility. Preserve justified boundaries, such as required providers, adaptation, or stable public interfaces.
-- Compute repeated expressions once when their inputs are unchanged. Simplify duplicated branches and logically redundant conditions only after verifying the underlying data invariants.
+- Identify redundant invocations of the same function, hook, helper, or computation within a component or execution path, including calls with different arguments. Reuse a single result when inputs are unchanged, or consolidate calls when the existing API supports multiple inputs in one invocation (for example, `useTranslation` with multiple namespaces). Inspect the function contract and consumers before recommending consolidation; preserve return values, ordering, side effects, independent state, hook rules, and distinct configurations. Do not merge calls merely because they use the same function name, and do not introduce unnecessary memoization.
+- Simplify duplicated branches and logically redundant conditions only after verifying the underlying data invariants.
 - Use named handlers for complex or multi-step actions; reserve inline callbacks for simple actions. Prefer clear `if/else` statements for conditional side effects and strict equality over loose equality.
 - Remove unused implementations, imports, variables, obsolete production mocks, dead branches, and unnecessary console statements. Preserve intentional test fixtures and approved logging or monitoring.
 - Avoid `cn()` around a purely static class string; check for invalid or stray utility classes.
@@ -80,6 +81,7 @@ Review frontend code as an experienced teammate familiar with the project's conv
 - Check `tailwind.config`, CSS variables (including `index.css`), and existing component variants before introducing hardcoded colors or other design values. Use the established token when one exists; do not invent token names or class prefixes.
 - Compare new UI against established examples of the same pattern, especially modal headers, action buttons, spacing, borders, and component variants. Use consistent icons and terminology for the same action across surfaces.
 - Localize user-facing strings, including status labels, through the project's existing i18n conventions. Verify translation keys and namespaces.
+- When a component uses multiple i18next namespaces with the same translation configuration, prefer a single `useTranslation(["sendup", "common"])` call over separate hooks and aliased translation functions. Use explicit namespace-prefixed keys (for example, `t("sendup:active-text")` and `t("common:displayed-text")`) to make the source unambiguous. Preserve existing keys and verify namespace loading, typing, and hook options before consolidating; retain separate calls when distinct configurations require them.
 - Preserve confirmation dialogs for consequential actions such as granting access, transferring ownership, or deleting data unless an approved requirement changes that behavior.
 - Ensure appropriate success and error feedback. Avoid redundant success toasts when the UI already clearly communicates the outcome and the project supports suppressing them. Do not remove necessary feedback from consequential actions.
 
@@ -143,6 +145,25 @@ const SharedDealContent = () => {
   // Consume the context here.
 };
 ```
+
+### Consolidating repeated hook calls (translation example)
+
+```tsx
+// Avoid
+const { t } = useTranslation("sendup");
+const { t: tCommon } = useTranslation("common");
+
+t("active-text");
+tCommon("displayed-text");
+
+// Prefer
+const { t } = useTranslation(["sendup", "common"]);
+
+t("sendup:active-text");
+t("common:displayed-text");
+```
+
+Use actual translation keys from the project; these keys are illustrative.
 
 ### Pending action protection
 
