@@ -1,5 +1,5 @@
 ---
-name: frontend-code-review
+name: code-review
 description: Review frontend React and TypeScript code for correctness, regressions, architecture, reuse, API integration, state synchronization, performance, design consistency, and meaningful test coverage. Use when reviewing pull requests, diffs, staged or uncommitted changes, existing frontend implementations, or frontend code before submission. Not intended for backend, database, or infrastructure reviews.
 ---
 
