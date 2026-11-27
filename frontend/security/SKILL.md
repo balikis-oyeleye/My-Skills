@@ -1,5 +1,5 @@
 ---
-name: frontend-security-review
+name: security
 description: Review frontend and Next.js security boundaries, including unsafe HTML and URL sinks, authorization, secret exposure, CSRF, SSR serialization, and Content Security Policy. Use for targeted security reviews or as a companion to the code-review skill.
 ---
 

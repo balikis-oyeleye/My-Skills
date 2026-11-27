@@ -38,16 +38,16 @@ A small, well-specified fix or local styling change does not require a full syst
 
 Use companions in design mode: inspect evidence and shape decisions, but do not edit product code.
 
-- **`frontend-architecture-review`:** Page ownership, colocation, reuse, module boundaries, abstractions, and dependencies.
-- **`frontend-typescript-review`:** Domain models, component props, API contracts, nullability, schemas, and public module contracts.
-- **`react-correctness-review`:** State ownership, effects, context, forms, routing behavior, asynchronous flows, and real-time synchronization.
-- **`frontend-ui-review`:** Information hierarchy, interaction states, responsive behavior, accessibility, dialogs, forms, and design-system fit.
+- **`architecture`:** Page ownership, colocation, reuse, module boundaries, abstractions, and dependencies.
+- **`typescript`:** Domain models, component props, API contracts, nullability, schemas, and public module contracts.
+- **`react-correctness`:** State ownership, effects, context, forms, routing behavior, asynchronous flows, and real-time synchronization.
+- **`ui`:** Information hierarchy, interaction states, responsive behavior, accessibility, dialogs, forms, and design-system fit.
 - **`api-integration`:** Endpoints, request and response shapes, query identity, caching, mutations, invalidation, pagination, races, and failure states.
-- **`nextjs-app-router-review`:** Route structure, Server and Client boundaries, actions, handlers, caching, metadata, and redirects.
-- **`frontend-i18n-review`:** Translation boundaries, locale routing, interpolation, plurals, and localized metadata.
-- **`frontend-security-review`:** Trust boundaries, authorization, unsafe sinks, secrets, CSRF, and serialization.
-- **`frontend-performance-seo-review`:** Bundle boundaries, rendering and network cost, images, Core Web Vitals, indexing, canonicals, and shareability.
-- **`frontend-testing-review`:** Behavioral acceptance criteria, regression coverage, repository test utilities, and validation scope.
+- **`nextjs-app-router`:** Route structure, Server and Client boundaries, actions, handlers, caching, metadata, and redirects.
+- **`i18n`:** Translation boundaries, locale routing, interpolation, plurals, and localized metadata.
+- **`security`:** Trust boundaries, authorization, unsafe sinks, secrets, CSRF, and serialization.
+- **`performance-seo`:** Bundle boundaries, rendering and network cost, images, Core Web Vitals, indexing, canonicals, and shareability.
+- **`testing`:** Behavioral acceptance criteria, regression coverage, repository test utilities, and validation scope.
 
 If a companion is unavailable, use verified repository patterns and authoritative documentation for the installed version, and mark the limitation.
 

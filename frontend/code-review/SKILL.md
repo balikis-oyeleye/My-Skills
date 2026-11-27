@@ -43,16 +43,16 @@ Do not assume requirements, contracts, components, types, or business rules. Inv
 
 Use a companion when its trigger applies. Apply all companions in review mode: report findings and recommendations, but do not edit files unless the user separately requests implementation.
 
-- **`frontend-architecture-review`:** Use for module ownership, colocation, abstractions, reuse, naming, imports, exports, dead code, and dependency placement.
-- **`frontend-typescript-review`:** Use for type modeling, narrowing, nullability, assertions, generics, exported contracts, runtime-schema alignment, and compiler-option claims.
+- **`architecture`:** Use for module ownership, colocation, abstractions, reuse, naming, imports, exports, dead code, and dependency placement.
+- **`typescript`:** Use for type modeling, narrowing, nullability, assertions, generics, exported contracts, runtime-schema alignment, and compiler-option claims.
 - **`api-integration`:** Use for HTTP services, TanStack Query queries or mutations, query keys, cache updates, pagination, response transformation, loading and error states, and API-facing types.
-- **`react-correctness-review`:** Use for hooks, effects, context, local or shared state, routing and browser history, asynchronous interactions, real-time synchronization, functional completeness, and runtime performance.
-- **`nextjs-app-router-review`:** Use for App Router Server and Client Component boundaries, Cache Components, route UX, Server Actions, Route Handlers, Proxy, metadata, and redirects.
-- **`frontend-security-review`:** Use for unsafe HTML or URL sinks, authorization boundaries, secrets, CSRF, SSR serialization, and Content Security Policy.
-- **`frontend-ui-review`:** Use for design-system consistency, Tailwind and CSS tokens, accessibility, responsive layout, interaction feedback, confirmation flows, and visible UI behavior.
-- **`frontend-i18n-review`:** Use for locale key integrity, namespaces, fallbacks, interpolation, plurals, locale routing, and localized metadata.
-- **`frontend-performance-seo-review`:** Use for bundles, rendering and network performance, Core Web Vitals, images, metadata, canonical URLs, indexing, redirects, and shareability.
-- **`frontend-testing-review`:** Use when tests change, behavior changes require regression coverage, or the repository's test standards affect the review.
+- **`react-correctness`:** Use for hooks, effects, context, local or shared state, routing and browser history, asynchronous interactions, real-time synchronization, functional completeness, and runtime performance.
+- **`nextjs-app-router`:** Use for App Router Server and Client Component boundaries, Cache Components, route UX, Server Actions, Route Handlers, Proxy, metadata, and redirects.
+- **`security`:** Use for unsafe HTML or URL sinks, authorization boundaries, secrets, CSRF, SSR serialization, and Content Security Policy.
+- **`ui`:** Use for design-system consistency, Tailwind and CSS tokens, accessibility, responsive layout, interaction feedback, confirmation flows, and visible UI behavior.
+- **`i18n`:** Use for locale key integrity, namespaces, fallbacks, interpolation, plurals, locale routing, and localized metadata.
+- **`performance-seo`:** Use for bundles, rendering and network performance, Core Web Vitals, images, metadata, canonical URLs, indexing, redirects, and shareability.
+- **`testing`:** Use when tests change, behavior changes require regression coverage, or the repository's test standards affect the review.
 
 When multiple areas apply, use all relevant companions and combine their results into one review. Do not duplicate the same underlying issue across companions.
 

@@ -1,5 +1,5 @@
 ---
-name: frontend-i18n-review
+name: i18n
 description: Review frontend internationalization, locale key integrity, namespaces, fallbacks, interpolation, plurals, locale routing, and localized SEO metadata. Use for targeted i18n reviews or as a companion to the code-review skill.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: frontend-performance-seo-review
+name: performance-seo
 description: Review frontend performance and SEO, including bundles, rendering, network waterfalls, Core Web Vitals, images, metadata, canonicals, indexing, redirects, and Open Graph data. Use for targeted audits or as a companion to the code-review skill.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: frontend-typescript-review
+name: typescript
 description: Review frontend TypeScript modeling, narrowing, nullability, assertions, generics, exported contracts, schema alignment, and compiler-option claims. Use for targeted TypeScript reviews or as a companion to the code-review skill.
 ---
 

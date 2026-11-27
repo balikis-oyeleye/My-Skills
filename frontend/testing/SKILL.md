@@ -1,5 +1,5 @@
 ---
-name: frontend-testing-review
+name: testing
 description: Review frontend tests and behavioral coverage for React and TypeScript changes, including user interactions, regressions, routing, async states, and repository test conventions. Use for targeted test reviews or as a companion to the code-review skill.
 ---
 

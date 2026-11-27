@@ -1,5 +1,5 @@
 ---
-name: nextjs-app-router-review
+name: nextjs-app-router
 description: Review Next.js App Router code for Server and Client Component boundaries, route UX, caching, revalidation, Server Actions, Route Handlers, Proxy, metadata, and redirects. Use for App Router reviews or as a companion to the code-review skill.
 ---
 

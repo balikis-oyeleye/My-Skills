@@ -1,5 +1,5 @@
 ---
-name: frontend-architecture-review
+name: architecture
 description: Review frontend architecture, module ownership, colocation, reuse, abstractions, naming, dependencies, and dead code. Use for targeted architecture reviews or as a companion to the code-review skill.
 ---
 

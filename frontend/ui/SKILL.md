@@ -1,5 +1,5 @@
 ---
-name: frontend-ui-review
+name: ui
 description: Review frontend UI consistency, accessibility, responsive behavior, design-system usage, Tailwind and CSS tokens, interaction feedback, confirmation flows, and visible behavior. Use for targeted UI reviews or as a companion to the code-review skill.
 ---
 

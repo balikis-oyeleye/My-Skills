@@ -1,5 +1,5 @@
 ---
-name: react-correctness-review
+name: react-correctness
 description: Review React runtime correctness, hooks, context, state synchronization, routing, browser history, asynchronous actions, real-time updates, functional completeness, and performance. Use for targeted React correctness reviews or as a companion to the code-review skill.
 ---
 

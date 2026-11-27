@@ -40,16 +40,16 @@ Do not invent API fields, design behavior, business rules, fallback values, rout
 
 Load only companions implicated by the task. A build request explicitly places them in implementation mode: apply their constraints while changing code, rather than returning review findings.
 
-- **`frontend-architecture-review`:** Ownership, colocation, reuse, abstractions, module boundaries, and dependencies.
-- **`frontend-typescript-review`:** Props, contracts, narrowing, schemas, nullability, exported APIs, and safe external boundaries.
-- **`react-correctness-review`:** Components, hooks, effects, context, state, forms, routing, asynchronous interactions, and real-time behavior.
-- **`frontend-ui-review`:** Design-system usage, Tailwind or CSS, interaction states, responsive behavior, accessibility, dialogs, forms, and visible feedback.
+- **`architecture`:** Ownership, colocation, reuse, abstractions, module boundaries, and dependencies.
+- **`typescript`:** Props, contracts, narrowing, schemas, nullability, exported APIs, and safe external boundaries.
+- **`react-correctness`:** Components, hooks, effects, context, state, forms, routing, asynchronous interactions, and real-time behavior.
+- **`ui`:** Design-system usage, Tailwind or CSS, interaction states, responsive behavior, accessibility, dialogs, forms, and visible feedback.
 - **`api-integration`:** HTTP services, TanStack Query, response transformations, mutations, invalidation, pagination, request races, and API-backed rendering states.
-- **`nextjs-app-router-review`:** App Router boundaries, route UX, Server Actions, Route Handlers, caching, revalidation, metadata, and redirects.
-- **`frontend-i18n-review`:** Translation keys, namespaces, interpolation, plurals, locale routing, and localized metadata.
-- **`frontend-security-review`:** Trust boundaries, unsafe sinks, authorization, secrets, CSRF, and SSR serialization.
-- **`frontend-performance-seo-review`:** Bundle and render cost, images, network behavior, Core Web Vitals, indexing, canonical URLs, and share metadata.
-- **`frontend-testing-review`:** Meaningful behavioral coverage and repository-specific test utilities.
+- **`nextjs-app-router`:** App Router boundaries, route UX, Server Actions, Route Handlers, caching, revalidation, metadata, and redirects.
+- **`i18n`:** Translation keys, namespaces, interpolation, plurals, locale routing, and localized metadata.
+- **`security`:** Trust boundaries, unsafe sinks, authorization, secrets, CSRF, and SSR serialization.
+- **`performance-seo`:** Bundle and render cost, images, network behavior, Core Web Vitals, indexing, canonical URLs, and share metadata.
+- **`testing`:** Meaningful behavioral coverage and repository-specific test utilities.
 
 If a companion is unavailable, follow verified repository patterns and authoritative documentation for the installed version, then state the limitation.
 
