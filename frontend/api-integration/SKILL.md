@@ -1,6 +1,6 @@
 ---
 name: api-integration
-description: Implement, review, or improve TanStack Query integrations in React and TypeScript. Use when integrating queries or mutations, transforming API responses with select, refactoring deprecated response transformations, or handling loading, success, error, empty, refetching, and pagination states.
+description: Implement, review, or improve browser-side API services and TanStack Query integrations in React and TypeScript. Use for HTTP request construction, API contracts, queries, mutations, cache updates, response transformations, loading and error states, or pagination.
 ---
 
 # TanStack Query Integration
@@ -11,13 +11,21 @@ Build readable, type-safe query integrations that follow existing project conven
 
 ## Workflow
 
-- Inspect the installed TanStack Query version, API hooks, response types, query keys, and similar components.
+- Inspect the HTTP client, installed TanStack Query version, request helpers, API hooks, response types, query keys, and similar implementations.
 - For new integrations, identify applicable states and response transformations before implementing.
 - For existing integrations, correct state handling and migrate response-only `useMemo` transformations in files being modified to `select`.
 - Reuse existing skeletons, error and empty-state components, pagination hooks, translations, and notification utilities. Avoid unrelated changes, new dependencies, and unnecessary abstractions.
 - Ask specific, grouped questions when API contracts, business logic, UI behavior, or architectural decisions remain unclear after inspection. Never invent requirements or fallback behavior. Wait for clarification on blocking decisions; distinguish recommendations from confirmed requirements.
 
 ## Core Guidelines
+
+### HTTP services and contracts
+
+- Follow the project's request helpers, service conventions, URL structure, authentication handling, query keys, and mutation metadata.
+- Keep URL construction separate from query-parameter serialization when the client supports it. Prefer Axios `params` and the configured serializer over manually building query strings.
+- Verify required array formats, encoding, omission rules, identifiers, nullability, pagination metadata, and response shapes against the actual API contract.
+- Reuse compatible payload and response types rather than declaring duplicates. Do not substitute placeholder identifiers or arbitrary empty values to silence types.
+- Avoid service-level `try/catch` blocks that only log and rethrow an error already handled by the query or mutation layer. Preserve meaningful recovery, cleanup, or error adaptation, and never swallow failures.
 
 ### Response transformation and normalization
 
@@ -29,6 +37,15 @@ Build readable, type-safe query integrations that follow existing project conven
 - `select` transforms the observer's returned data, not the underlying cached query-function result. Cache updates must use the original cached shape. For infinite queries, retain `pages` and `pageParams` in cache updates and initial/placeholder data; selected output may expose a different shape when supported by the installed version and correctly typed.
 - Normalize into IDs and entities only when useful. Do not silently deduplicate or change ordering; clarify duplicate handling when it affects business behavior.
 - Do not turn malformed responses into empty results through arbitrary fallbacks.
+- Type the request or `AxiosResponse<T>` so TypeScript verifies the response assignment. Do not assert a response shape only at the return statement.
+- Keep transport services focused on transport when the repository convention puts extraction, sorting, mapping, or filtering in a pure `select` function. Use non-mutating copies for sorting.
+
+### Query identity and execution
+
+- Include every value that affects fetched data in the query key, including filters, pagination, locale, and user, account, or workspace identifiers. Avoid unstable or non-serializable key parts.
+- Use `enabled` when required inputs may not exist, and ensure the query function cannot execute with an undefined required identifier.
+- Evaluate freshness, mount, focus, reconnect, retry, and garbage-collection behavior against TanStack Query defaults and the installed version. Do not label default refetching a defect without establishing the intended freshness policy.
+- Avoid retries for non-idempotent operations and auth endpoints when they can repeat side effects or delay required error handling.
 
 ### Rendering states
 
@@ -53,6 +70,7 @@ In v5, `isLoading` is `isPending && isFetching`. Disabled queries can be pending
 ### Infinite pagination
 
 - Derive page parameters from the actual API contract and stop fetching when `hasNextPage` is false.
+- For mutable offset-paginated collections, investigate duplicate or missing records caused by concurrent inserts or removals. Verify whether invalidation, the pagination strategy, or an explicit deduplication policy addresses the risk.
 - Reuse the existing infinite-scroll hook. Guard automatic pagination against active fetches, placeholder data where relevant, and next-page errors. Do not create automatic retry loops.
 - Keep manual retry separate from automatic pagination so a failed page can be retried deliberately. Prevent overlapping requests unless explicitly intended.
 - Use the corresponding previous-page flags and controls for bidirectional pagination.
@@ -63,6 +81,17 @@ In v5, `isLoading` is `isPending && isFetching`. Disabled queries can be pending
 - Follow existing confirmation, notification, and error-handling conventions. Close confirmation dialogs after success unless optimistic behavior is explicitly intended.
 - Update or invalidate the appropriate query keys using the original cache shape. Do not assume invalidation scope.
 - Introduce optimistic updates only when required, with rollback or reconciliation.
+- Keep reusable mutation hooks free of page-local modal, rollback, or navigation behavior unless every consumer shares that contract. Use call-site mutation callbacks for invocation-specific behavior.
+- When concurrent optimistic mutations are possible, ensure rollback restores only the failed mutation's data rather than overwriting later changes.
+
+### API clients, races, and SSR
+
+- For custom clients, inspect base URL and slash handling, authentication injection, request cloning before retry, response-body reuse, consistent errors, cancellation, and timeout behavior where needed.
+- Coordinate token refresh through one in-flight promise, retry an original request at most once, exclude auth endpoints from refresh loops, and clear authentication state when refresh cannot recover.
+- Prevent stale request responses from overwriting newer state when parameters change or requests race.
+- Look for serial or nested request waterfalls that can safely run in parallel; for Suspense queries, verify the installed API supports the proposed parallel pattern.
+- For SSR or React Server Component integrations, create server query clients per request, keep the browser query client stable during initial suspension, prefetch early enough to avoid waterfalls, and serialize dehydrated state safely.
+- Copying query data into local form state is valid when it deliberately initializes an editable draft; flag accidental copies that silently stop reflecting server-state updates.
 
 ## Quick Snippets
 
