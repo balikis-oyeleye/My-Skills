@@ -15,7 +15,7 @@ Review React, Next.js, and TypeScript frontend applications, including component
 
 Inspect backend contracts only as needed to verify frontend behavior. Do not review server implementations, database schemas, or infrastructure. For mixed changes, review the frontend work and report external dependencies or contract uncertainties separately.
 
-Review only unless implementation is explicitly requested.
+Do not edit files for a review-only request. When the user explicitly asks to implement fixes as part of the same task, use `build` for the authorized implementation after establishing the review findings.
 
 ### Isolated snippets
 
@@ -59,6 +59,10 @@ When multiple areas apply, use all relevant companions and combine their results
 If a named companion is unavailable, continue using repository evidence and authoritative documentation, and state the limitation.
 
 ### Related workflow
+
+Use **`system-design`** to draft and correct a new feature or material architectural change before implementation. It must receive explicit approval before handing work to `build`.
+
+Use **`build`** when the user asks to create, implement, fix, refactor, or integrate frontend functionality. For a combined review-and-fix request, use this skill to establish evidence and `build` to make and validate the requested changes.
 
 Use **`pr-description-generator`** only when the user explicitly asks for a pull request description. It is not part of an ordinary code review and must not be loaded merely because the review target is a PR.
 
